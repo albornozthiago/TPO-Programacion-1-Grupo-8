@@ -1,13 +1,22 @@
+AGUA_SIN_EXPLORAR = "~"
+NAVE_OCULTA = "N"
+AGUA_MARCADA = "o"
+IMPACTO = "X"
+HUNDIDO = "#"
+DETECTADO = "?"
+
+RANGO_DEFECTO = 8
+
 def crear_cubo(n):
     """
     Crea un cubo de dimensiones n x n x n.
 
     Recibe:
-        n: tamaño del cubo. Por defecto vale 8.
+        n: tamaño del cubo(el valor habitual es RANGO_DEFECTO, 8).
 
     Devuelve:
         Una lista de listas de listas donde todas las celdas
-        comienzan como aguasinexplorar.
+        comienzan como AGUA_SIN_EXPLORAR.
     """
     cubo = []
     for z in range(n):
@@ -15,12 +24,50 @@ def crear_cubo(n):
         for x in range(n):
             fila = []
             for y in range(n):
-                fila.append(aguasinexplorar)
+                fila.append(AGUA_SIN_EXPLORAR)
             capa.append(fila)
         cubo.append(capa)
     return cubo
 
-#analizar si hace falta crear una función o no
+
+def sumar_matrices(a, b):
+    """
+    Suma dos matrices de las mismas dimensiones.
+
+    Recibe:
+        a, b: matrices (listas de listas) del mismo tamaño.
+    Devuelve:
+        Una matriz nueva con la suma elemento a elemento.
+    Excepciones:
+        IndexError si las dimensiones no coinciden.
+    """
+    resultado = []
+    for fila in range(0, len(a)):
+        nueva_fila = []
+        for columna in range(0, len(a[fila])):
+            nueva_fila.append(a[fila][columna] + b[fila][columna])
+        resultado.append(nueva_fila)
+    return resultado
+
+def transponer_matriz(matriz):
+    """
+    Transpone una matriz: las filas pasan a ser columnas.
+
+    Recibe:
+        matriz: lista de listas rectangular.
+    Devuelve:
+        Una matriz nueva de n x m a partir de una de m x n.
+    Excepciones:
+        IndexError si la matriz esta vacia.
+    """
+    resultado = []
+    for j in range(0, len(matriz[0])):
+        nueva_fila = []
+        for i in range(0, len(matriz)):
+            nueva_fila.append(matriz[i][j])
+        resultado.append(nueva_fila)
+    return resultado
+
 def tamanio_cubo(cubo):
     """
     Devuelve el tamaño N del cubo.
@@ -65,7 +112,7 @@ def punto_valido(cubo, punto):
     return True
 
 
-def convertir_indices(punto):
+def _convertir_indices(punto):
     """
     Las coordenadas del usuario empiezan en 1, las direcciones de las listas en Python empiezan en 0.
     Convierte coordenadas de usuario a índices de Python.
@@ -96,7 +143,7 @@ def leer_celda(cubo, punto):
 
     if not punto_valido(cubo, punto):
         return None
-    z, x, y = convertir_indices(punto)
+    z, x, y = _convertir_indices(punto)
     return cubo[z][x][y]
 
 def escribir_celda(cubo, punto, estado):
@@ -115,7 +162,7 @@ def escribir_celda(cubo, punto, estado):
 
     if not punto_valido(cubo, punto):
         return False
-    z, x, y = convertir_indices(punto)
+    z, x, y = _convertir_indices(punto)
     cubo[z][x][y] = estado
     return True
 
@@ -179,11 +226,11 @@ def dibujar_plano_z(cubo, z):
         texto += "\n"
     texto += "\n"
     texto += "Referencias: "
-    texto += "~ sin explorar  "
-    texto += "o agua  "
-    texto += "X impacto  "
-    texto += "# hundido  "
-    texto += "? detectado"
+    texto += AGUA_SIN_EXPLORAR + " sin explorar  "
+    texto += AGUA_MARCADA + " agua  "
+    texto += IMPACTO + " impacto  "
+    texto += HUNDIDO + " hundido  "
+    texto += DETECTADO + " detectado"
     return texto
 
 def copiar_matriz(matriz):
@@ -245,14 +292,4 @@ def columna_maxima(matriz):
     maximo = promedios.index(max(promedios))
     return maximo
 
-aguasinexplorar = "~"
-naveoculta = "N"
-aguamarcada = "o"
-impacto = "X"
-hundido = "#"
-detectado = "?"
-rango = 8
 
-#prueba
-tablero=crear_cubo(rango)
-print(dibujar_plano_z(tablero, 1))

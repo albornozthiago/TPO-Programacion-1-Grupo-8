@@ -1,7 +1,7 @@
 import random
 import tablero
 
-NAVE_OCULTA = "N"
+
 
 # Catálogo de naves
 CATALOGO_NAVES = {
@@ -137,6 +137,15 @@ def generar_puntos_estacion(punto_desde, punto_hasta):
 def puntos_validos(cubo, puntos):
     """
     Verifica que todos los puntos pertenezcan al cubo y no se repitan.
+
+    Recibe:
+        cubo: cubo de juego
+        puntos: lista de puntos (z, x, y)
+    Devuelve:
+        True si todos los puntos estan dentro del cubo y ninguno se repite.
+        False en caso contrario.
+    Excepciones:
+        No lanza excepciones.
     """
     repetidos = []
 
@@ -292,6 +301,15 @@ def restriccion_nave(cubo, tipo, puntos):
 def marcar_nave(cubo, puntos):
     """
     Marca como NAVE_OCULTA todos los puntos de una nave.
+
+    Recibe:
+        cubo: cubo de juego (se modifica)
+        puntos: lista de puntos (z, x, y) de la nave, con ejes de 1 a N
+    Devuelve:
+        Nada. Modifica el cubo recibido.
+    Excepciones:
+        IndexError si algun punto esta fuera del cubo
+        (ubicar_nave lo valida antes de llamarla).
     """
 
     for punto in puntos:
@@ -300,7 +318,7 @@ def marcar_nave(cubo, puntos):
         x = punto[1] - 1
         y = punto[2] - 1
 
-        cubo[z][x][y] = NAVE_OCULTA
+        cubo[z][x][y] = tablero.NAVE_OCULTA
 
 
 # =========================================================
@@ -312,16 +330,19 @@ def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
     Intenta ubicar una nave.
 
     Recibe:
-        cubo
-        flota
-        nave
-        punto_desde
-        punto_hasta
-
+        cubo: cubo de juego
+        flota: lista de naves ya ubicadas
+        nave: letra del tipo de nave (F/D/S/C/P/E)
+        punto_desde: (z, x, y) del primer extremo
+        punto_hasta: (z, x, y) del otro extremo
     Devuelve:
-        cubo y flota actualizados si la ubicacion es valida.
-
-        Devuelve None si no se puede ubicar.
+        (cubo, flota) actualizados si la ubicacion es valida.
+        None si no se puede ubicar (tipo inexistente, cantidad maxima
+        alcanzada, puntos que no forman la nave, nave fuera del cubo,
+        restriccion del tipo incumplida o nave que toca a otra).
+        Si devuelve None, el cubo y la flota quedan sin modificar.
+    Excepciones:
+        AttributeError si nave no es una cadena.
     """
 
     nave = nave.upper()
@@ -399,8 +420,15 @@ def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
 
 def naves_pendientes(flota):
     """
-    Devuelve un diccionario con la cantidad pendiente
-    de cada tipo de nave.
+    Calcula cuantas naves de cada tipo faltan ubicar.
+
+    Recibe:
+        flota: lista de naves ubicadas
+    Devuelve:
+        Un diccionario {letra: cantidad pendiente}, por ejemplo
+        {"F": 3, "D": 2, "S": 2, "C": 1, "P": 1, "E": 1}.
+    Excepciones:
+        No lanza excepciones.
     """
 
     pendientes = {}
@@ -425,7 +453,15 @@ def naves_pendientes(flota):
 
 def flota_completa(flota):
     """
-    Devuelve True si toda la flota fue ubicada.
+    Indica si toda la flota ya fue ubicada.
+
+    Recibe:
+        flota: lista de naves ubicadas
+    Devuelve:
+        True si estan ubicadas todas las naves del catalogo.
+        False si falta alguna.
+    Excepciones:
+        No lanza excepciones.
     """
 
     for tipo in CATALOGO_NAVES:
@@ -449,8 +485,17 @@ def flota_completa(flota):
 
 def generar_ubicacion_aleatoria(n, tipo):
     """
-    Genera dos puntos aleatorios para intentar
-    ubicar una nave.
+    Genera dos puntos aleatorios para intentar ubicar una nave.
+    No garantiza que la ubicacion sea valida: eso lo decide ubicar_nave.
+
+    Recibe:
+        n: tamaño del cubo
+        tipo: letra del tipo de nave
+    Devuelve:
+        (desde, hasta): dos puntos (z, x, y) que forman la nave.
+    Excepciones:
+        KeyError si tipo no esta en CATALOGO_NAVES.
+        ValueError si n es demasiado chico para la nave.
     """
 
     # -----------------------------------------------------
