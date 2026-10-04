@@ -37,6 +37,8 @@ CATALOGO_NAVES = {
     }
 }
 
+ORDEN_AUTOMATICO = ["E", "P", "C", "D", "S", "F"]
+
 def cantidad_ubicada(flota, tipo):
     """
     Verifica la cantidad de naves de un tipo que ya fueron ubicadas.
@@ -574,7 +576,7 @@ def ubicacion_automatica(cubo, catalogo, semilla):
 
     flota = []
 
-    for tipo in catalogo:
+    for tipo in ORDEN_AUTOMATICO:
 
         cantidad = catalogo[tipo]["cantidad"]
 

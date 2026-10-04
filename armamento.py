@@ -31,19 +31,19 @@ def torpedo(cubo, punto):
 
     celda = tablero.leer_celda(cubo, punto)
 
-    if celda == tablero.aguasinexplorar:
-        tablero.escribir_celda(cubo, punto, tablero.aguamarcada)
+    if celda == tablero.AGUA_SIN_EXPLORAR:
+        tablero.escribir_celda(cubo, punto, tablero.AGUA_MARCADA)
         return "Agua"
 
-    if celda == tablero.naveoculta:
-        tablero.escribir_celda(cubo, punto, tablero.impacto)
+    if celda == tablero.NAVE_OCULTA:
+        tablero.escribir_celda(cubo, punto, tablero.IMPACTO)
         return "Impacto"
 
-    if celda == tablero.aguamarcada:
+    if celda == tablero.AGUA_MARCADA:
         return "Celda ya disparada"
 
-    if celda == tablero.impacto:
+    if celda == tablero.IMPACTO:
         return "Celda ya disparada"
 
-    if celda == tablero.hundido:
+    if celda == tablero.HUNDIDO:
         return "Celda ya disparada"

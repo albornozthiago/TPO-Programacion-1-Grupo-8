@@ -9,6 +9,6 @@ Registro del trabajo hecho por entrega, explicando quien desarrollo cada módulo
 | Albornoz Thiago | registro.py |
 | Lesme Franco | main.py |
 | Sanchez De Bock Ignacio |  |
-| Sarniguette Valentino |  |
+| Sarniguette Valentino | flota.py |
 | Trezeguet Gaston |  |
 | Zaccari Valentin |  |
