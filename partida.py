@@ -12,6 +12,7 @@ PATRON_TRAMO = (
     r"^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*-\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$"
 )
 
+
 def leer_tramo(texto):
     """
     Convierte un tramo tipeado por el usuario en dos puntos.
@@ -39,6 +40,7 @@ def leer_tramo(texto):
 
     return desde, hasta
 
+
 def opcion_valida(texto, opciones):
     """
     Indica si una opcion tipeada existe en un menu.
@@ -55,6 +57,7 @@ def opcion_valida(texto, opciones):
 
     return re.match(PATRON_OPCION, texto) is not None and texto in opciones
 
+
 def nave_valida(texto, pendientes):
     """
     Indica si una letra de nave es valida y quedan naves de ese tipo.
@@ -70,6 +73,7 @@ def nave_valida(texto, pendientes):
     """
 
     return re.match(PATRON_NAVE, texto) is not None and pendientes[texto] > 0
+
 
 def texto_pendientes(pendientes):
     """
@@ -89,6 +93,7 @@ def texto_pendientes(pendientes):
     ]
 
     return f"Pendientes: {'  '.join(partes)}"
+
 
 def pedir_opcion(titulo, opciones):
     """
@@ -114,6 +119,7 @@ def pedir_opcion(titulo, opciones):
 
     return opcion
 
+
 def mostrar_estado(nombre_jugador, cubo, flota_jugador):
     """
     Muestra el estado de un jugador: sus naves y el cubo capa por capa.
@@ -138,6 +144,19 @@ def mostrar_estado(nombre_jugador, cubo, flota_jugador):
     for z in range(1, tablero.tamanio_cubo(cubo) + 1):
         print(tablero.dibujar_plano_z(cubo, z))
         print()
+
+
+def opcion_no_disponible():
+    """
+    Avisa que la opcion todavia no esta implementada.
+
+    Devuelve:
+        True, para volver al menu principal.
+    """
+
+    print("\n[!] Opcion no disponible en esta entrega.")
+
+    return True
 
 
 def ubicar_manualmente(n):
@@ -180,6 +199,7 @@ def ubicar_manualmente(n):
 
     return cubo, flota_jugador
 
+
 def ubicar_automaticamente(n):
     """
     Ubica toda la flota de forma automatica.
@@ -201,10 +221,12 @@ def ubicar_automaticamente(n):
 
     return cubo, flota_jugador
 
+
 MENU_UBICACION = {
     "1": ("Ubicacion manual", ubicar_manualmente),
     "2": ("Ubicacion automatica", ubicar_automaticamente),
 }
+
 
 def ubicar_flota(nombre_jugador, n):
     """
@@ -223,59 +245,6 @@ def ubicar_flota(nombre_jugador, n):
     return MENU_UBICACION[opcion][1](n)
 
 
-def opcion_uno_contra_uno():
-    """
-    Ubica las flotas de los dos jugadores y muestra el estado de cada uno.
-
-    Devuelve:
-        True, para volver al menu principal.
-    """
-
-    n = tablero.RANGO_DEFECTO
-
-    cubo_1, flota_1 = ubicar_flota("Jugador 1", n)
-    mostrar_estado("Jugador 1", cubo_1, flota_1)
-
-    cubo_2, flota_2 = ubicar_flota("Jugador 2", n)
-    mostrar_estado("Jugador 2", cubo_2, flota_2)
-
-    print("Ambas flotas ubicadas. Los turnos se incorporan en la proxima entrega.")
-
-    return True
-
-def opcion_contra_maquina():
-    """
-    Ubica la flota del jugador y la de la maquina (siempre automatica),
-    y muestra el estado del jugador.
-
-    Devuelve:
-        True, para volver al menu principal.
-    """
-
-    n = tablero.RANGO_DEFECTO
-
-    cubo_jugador, flota_jugador = ubicar_flota("Jugador 1", n)
-    mostrar_estado("Jugador 1", cubo_jugador, flota_jugador)
-
-    flota_maquina = ubicar_automaticamente(n)[1]
-    print(f"La maquina ubico su flota de {len(flota_maquina)} naves.")
-
-    print("\n[i] Los turnos se incorporan en la proxima entrega.")
-
-    return True
-
-def opcion_no_disponible():
-    """
-    Avisa que la opcion todavia no esta implementada.
-
-    Devuelve:
-        True, para volver al menu principal.
-    """
-
-    print("\n[!] Opcion no disponible en esta entrega.")
-
-    return True
-
 def salir():
     """
     Termina el programa.
@@ -288,13 +257,15 @@ def salir():
 
     return False
 
+
 MENU_PRINCIPAL = {
-    "1": ("Partida uno contra uno", opcion_uno_contra_uno),
-    "2": ("Partida uno contra la maquina", opcion_contra_maquina),
+    "1": ("Partida uno contra uno", opcion_no_disponible),
+    "2": ("Partida uno contra la maquina", opcion_no_disponible),
     "3": ("Partida maquina contra maquina", opcion_no_disponible),
     "4": ("Continuar una partida guardada", opcion_no_disponible),
     "5": ("Salir", salir),
 }
+
 
 def menu_principal():
     """
@@ -309,6 +280,7 @@ def menu_principal():
     while seguir:
         opcion = pedir_opcion("\n===== OPERACION CUBO =====", MENU_PRINCIPAL)
         seguir = MENU_PRINCIPAL[opcion][1]()
+
 
 if __name__ == "__main__":
     menu_principal()
