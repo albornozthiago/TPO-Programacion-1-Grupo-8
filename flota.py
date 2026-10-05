@@ -1,9 +1,6 @@
 import random
 import tablero
 
-
-
-# Catálogo de naves
 CATALOGO_NAVES = {
     "F": {
         "nombre": "Fragata",
@@ -162,7 +159,6 @@ def puntos_validos(cubo, puntos):
 
     return True
 
-
 def puntos_ocupados(flota):
     """
     Verifica los puntos ocupados por las naves de la flota.
@@ -211,11 +207,6 @@ def distancia_valida(flota, puntos_nuevos):
                 return False
 
     return True
-
-
-# =========================================================
-# RESTRICCIONES DE CADA TIPO DE NAVE
-# =========================================================
 
 def restriccion_nave(cubo, tipo, puntos):
     """
@@ -295,11 +286,6 @@ def restriccion_nave(cubo, tipo, puntos):
 
     return True
 
-
-# =========================================================
-# MARCAR LA NAVE EN EL CUBO
-# =========================================================
-
 def marcar_nave(cubo, puntos):
     """
     Marca como NAVE_OCULTA todos los puntos de una nave.
@@ -322,10 +308,6 @@ def marcar_nave(cubo, puntos):
 
         cubo[z][x][y] = tablero.NAVE_OCULTA
 
-
-# =========================================================
-# UBICAR NAVE
-# =========================================================
 
 def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
     """
@@ -415,11 +397,6 @@ def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
 
     return cubo, flota
 
-
-# =========================================================
-# NAVES PENDIENTES
-# =========================================================
-
 def naves_pendientes(flota):
     """
     Calcula cuantas naves de cada tipo faltan ubicar.
@@ -448,11 +425,6 @@ def naves_pendientes(flota):
 
     return pendientes
 
-
-# =========================================================
-# FLOTA COMPLETA
-# =========================================================
-
 def flota_completa(flota):
     """
     Indica si toda la flota ya fue ubicada.
@@ -479,11 +451,6 @@ def flota_completa(flota):
             return False
 
     return True
-
-
-# =========================================================
-# GENERAR UBICACION ALEATORIA
-# =========================================================
 
 def generar_ubicacion_aleatoria(n, tipo):
     """
@@ -551,11 +518,6 @@ def generar_ubicacion_aleatoria(n, tipo):
         hasta = (z, x, y + largo - 1)
 
     return desde, hasta
-
-
-# =========================================================
-# UBICACION AUTOMATICA
-# =========================================================
 
 def ubicacion_automatica(cubo, catalogo, semilla):
     """

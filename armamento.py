@@ -11,14 +11,12 @@ catalogo_armas = {
     "G": {"nombre": "Torpedo guiado", "municion": 1}
 }
 
-
 def obtener_arma(codigo):
     """
     Recibe el código de un arma y devuelve su información.
     Si el código no existe, devuelve None.
     """
     return catalogo_armas.get(codigo)
-
 
 def torpedo(cubo, punto):
     """
