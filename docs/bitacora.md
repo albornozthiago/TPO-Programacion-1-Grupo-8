@@ -11,4 +11,4 @@ Registro del trabajo hecho por entrega, explicando quien desarrollo cada módulo
 | Sanchez De Bock Ignacio |  |
 | Sarniguette Valentino | flota.py |
 | Trezeguet Gaston |  |
-| Zaccari Valentin |  |
+| Zaccari Valentin |armamento.py  |
