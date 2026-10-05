@@ -5,10 +5,6 @@ IMPACTO = "X"
 HUNDIDO = "#"
 DETECTADO = "?"
 
-aguamarcada = AGUA_MARCADA
-naveoculta = NAVE_OCULTA
-impacto = IMPACTO
-
 RANGO_DEFECTO = 8
 
 def crear_cubo(n):

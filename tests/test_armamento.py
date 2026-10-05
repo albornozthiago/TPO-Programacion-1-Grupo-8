@@ -12,7 +12,7 @@ def test_torpedo_agua():
     resultado = armamento.torpedo(cubo, (1, 1, 1))
 
     assert resultado == "Agua"
-    assert tablero.leer_celda(cubo, (1, 1, 1)) == tablero.aguamarcada
+    assert tablero.leer_celda(cubo, (1, 1, 1)) == tablero.AGUA_MARCADA
 
 
 def test_torpedo_impacto():
@@ -21,12 +21,12 @@ def test_torpedo_impacto():
     y marque la celda como impactada.
     """
     cubo = tablero.crear_cubo(8)
-    tablero.escribir_celda(cubo, (2, 2, 2), tablero.naveoculta)
+    tablero.escribir_celda(cubo, (2, 2, 2), tablero.NAVE_OCULTA)
 
     resultado = armamento.torpedo(cubo, (2, 2, 2))
 
     assert resultado == "Impacto"
-    assert tablero.leer_celda(cubo, (2, 2, 2)) == tablero.impacto
+    assert tablero.leer_celda(cubo, (2, 2, 2)) == tablero.IMPACTO
 
 
 def test_torpedo_punto_invalido():

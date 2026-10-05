@@ -30,7 +30,7 @@ def calcular_tiempo_ms(inicio):
 
 
 
-def busqueda_lineal(cubo, objetivo=tablero.naveoculta):
+def busqueda_lineal(cubo, objetivo=tablero.NAVE_OCULTA):
     """
     Busca la primera celda del cubo que tenga el estado objetivo,
     recorriendo celda por celda con for anidados y sin estructura auxiliar.
@@ -39,7 +39,7 @@ def busqueda_lineal(cubo, objetivo=tablero.naveoculta):
 
     Recibe:
         cubo: cubo de juego (lista de listas de listas).
-        objetivo: estado a buscar. Por defecto, tablero.naveoculta.
+        objetivo: estado a buscar. Por defecto, tablero.NAVE_OCULTA.
 
     Devuelve:
         Una tupla (punto, metricas):
@@ -62,7 +62,7 @@ def busqueda_lineal(cubo, objetivo=tablero.naveoculta):
     return None, metricas
     
 
-def busqueda_optimizada(cubo, objetivo=tablero.naveoculta):
+def busqueda_optimizada(cubo, objetivo=tablero.NAVE_OCULTA):
     """
     Busca la primera celda con el estado objetivo usando paridad
     (patrón de "tablero de ajedrez" en 3D).
@@ -78,7 +78,7 @@ def busqueda_optimizada(cubo, objetivo=tablero.naveoculta):
 
     Recibe:
         cubo: cubo de juego.
-        objetivo: estado a buscar. Por defecto, tablero.naveoculta.
+        objetivo: estado a buscar. Por defecto, tablero.NAVE_OCULTA.
 
     Devuelve:
         Una tupla (punto, metricas), igual que busqueda_lineal.
@@ -149,6 +149,6 @@ def sonar_plano(cubo, eje, valor):
 
     contactos = []
     for punto in puntos:
-        if tablero.leer_celda(cubo, punto) == tablero.naveoculta:
+        if tablero.leer_celda(cubo, punto) == tablero.NAVE_OCULTA:
             contactos.append(punto)
     return contactos
