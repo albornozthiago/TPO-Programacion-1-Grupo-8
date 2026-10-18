@@ -197,10 +197,6 @@ def dibujar_plano_z(cubo, z):
     """
     Genera una representación en texto de un plano de z.
 
-    No utiliza print porque tablero.py es un módulo de dominio.
-    La función devuelve el texto para que partida.py pueda
-    mostrarlo.
-
     Recibe:
         cubo: cubo de juego.
         z: número de capa.
