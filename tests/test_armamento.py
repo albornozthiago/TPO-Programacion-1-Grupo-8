@@ -207,7 +207,26 @@ def test_torpedo_con_flota():
 
     assert resultado_ubicacion is not None
 
-    resultado = armamento.torpedo(cubo, (3, 3, 3))
+    resultado = armamento.ejecutar_disparo(
+        cubo, "T", (3, 3, 3), flota_jugador=naves
+    )
 
-    assert resultado == "Impacto"
+    assert resultado == "Nave averiada"
     assert tablero.leer_celda(cubo, (3, 3, 3)) == tablero.IMPACTO
+    assert naves[0]["impactos"] == [(3, 3, 3)]
+    assert naves[0]["estado"] == flota.NAVE_AVERIADA
+
+
+def test_torpedo_hunde_nave_y_actualiza_todas_sus_celdas():
+    cubo = tablero.crear_cubo(8)
+    naves = []
+    flota.ubicar_nave(cubo, naves, "F", (3, 3, 3), (3, 3, 4))
+
+    assert armamento.torpedo(cubo, (3, 3, 3), naves) == "Nave averiada"
+    resultado = armamento.torpedo(cubo, (3, 3, 4), naves)
+
+    assert resultado == "Nave hundida"
+    assert naves[0]["estado"] == flota.NAVE_HUNDIDA
+    assert naves[0]["impactos"] == [(3, 3, 3), (3, 3, 4)]
+    assert tablero.leer_celda(cubo, (3, 3, 3)) == tablero.HUNDIDO
+    assert tablero.leer_celda(cubo, (3, 3, 4)) == tablero.HUNDIDO

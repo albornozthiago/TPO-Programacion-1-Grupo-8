@@ -1,4 +1,5 @@
 import tablero
+import flota as modulo_flota
 
 # Catálogo de armas
 catalogo_armas = {
@@ -18,7 +19,7 @@ def obtener_arma(codigo):
     """
     return catalogo_armas.get(codigo)
 
-def torpedo(cubo, punto):
+def torpedo(cubo, punto, flota_jugador=None):
     """
     Recibe el cubo y el punto al que se dispara.
     Devuelve el resultado del disparo y modifica la celda correspondiente.
@@ -35,6 +36,8 @@ def torpedo(cubo, punto):
 
     if celda == tablero.NAVE_OCULTA:
         tablero.escribir_celda(cubo, punto, tablero.IMPACTO)
+        if flota_jugador is not None:
+            return modulo_flota.registrar_impacto(cubo, flota_jugador, punto)
         return "Impacto"
 
     if celda == tablero.AGUA_MARCADA:
@@ -46,7 +49,7 @@ def torpedo(cubo, punto):
     if celda == tablero.HUNDIDO:
         return "Celda ya disparada"
     
-def misil_racimo(cubo, punto):
+def misil_racimo(cubo, punto, flota_jugador=None):
     """
     Recibe el cubo y el punto del disparo.
     Dispara a la celda elegida y sus 6 vecinas ortogonales.
@@ -72,12 +75,12 @@ def misil_racimo(cubo, punto):
 
     for objetivo in puntos:
         if tablero.punto_valido(cubo, objetivo):
-            resultado = torpedo(cubo, objetivo)
+            resultado = torpedo(cubo, objetivo, flota_jugador)
             resultados.append(resultado)
 
     return resultados
 
-def carga_profundidad(cubo, punto):
+def carga_profundidad(cubo, punto, flota_jugador=None):
     """
     Dispara a todas las celdas del eje Z
     que tienen las mismas coordenadas X e Y.
@@ -92,12 +95,12 @@ def carga_profundidad(cubo, punto):
 
     for nivel in range(1, len(cubo) + 1):
         objetivo = (nivel, x, y)
-        resultado = torpedo(cubo, objetivo)
+        resultado = torpedo(cubo, objetivo, flota_jugador)
         resultados.append(resultado)
 
     return resultados
 
-def barrido_laser(cubo, punto, eje):
+def barrido_laser(cubo, punto, eje, flota_jugador=None):
     """
     Dispara a toda una línea sobre el eje X o Y.
     Devuelve una lista con los resultados.
@@ -119,7 +122,7 @@ def barrido_laser(cubo, punto, eje):
         else:
             objetivo = (z, x, posicion)
 
-        resultado = torpedo(cubo, objetivo)
+        resultado = torpedo(cubo, objetivo, flota_jugador)
         resultados.append(resultado)
 
     return resultados
@@ -152,7 +155,7 @@ funciones_armas = {
     "L": barrido_laser
 }
 
-def ejecutar_disparo(cubo, codigo, punto, eje=None):
+def ejecutar_disparo(cubo, codigo, punto, eje=None, flota_jugador=None):
     """
     Ejecuta un disparo según el arma elegida.
     Comprueba la munición antes de disparar.
@@ -173,9 +176,9 @@ def ejecutar_disparo(cubo, codigo, punto, eje=None):
         return "Sin municion"
 
     if codigo == "L":
-        resultado = funciones_armas[codigo](cubo, punto, eje)
+        resultado = funciones_armas[codigo](cubo, punto, eje, flota_jugador)
     else:
-        resultado = funciones_armas[codigo](cubo, punto)
+        resultado = funciones_armas[codigo](cubo, punto, flota_jugador)
 
     consumir_municion(codigo)
 

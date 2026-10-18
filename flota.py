@@ -36,6 +36,11 @@ CATALOGO_NAVES = {
 
 ORDEN_AUTOMATICO = ["E", "P", "C", "D", "S", "F"]
 
+NAVE_INTACTA = "intacta"
+NAVE_AVERIADA = "averiada"
+NAVE_HUNDIDA = "hundida"
+
+
 def cantidad_ubicada(flota, tipo):
     """
     Verifica la cantidad de naves de un tipo que ya fueron ubicadas.
@@ -309,6 +314,29 @@ def marcar_nave(cubo, puntos):
         cubo[z][x][y] = tablero.NAVE_OCULTA
 
 
+def registrar_impacto(cubo, flota, punto):
+    """Actualiza el daño de la nave alcanzada y devuelve el resultado."""
+
+    for nave in flota:
+        if punto not in nave["puntos"]:
+            continue
+
+        impactos = nave.setdefault("impactos", [])
+        if punto not in impactos:
+            impactos.append(punto)
+
+        if len(impactos) == len(nave["puntos"]):
+            nave["estado"] = NAVE_HUNDIDA
+            for punto_nave in nave["puntos"]:
+                tablero.escribir_celda(cubo, punto_nave, tablero.HUNDIDO)
+            return "Nave hundida"
+
+        nave["estado"] = NAVE_AVERIADA
+        return "Nave averiada"
+
+    return "Impacto"
+
+
 def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
     """
     Intenta ubicar una nave.
@@ -388,7 +416,9 @@ def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
     nueva_nave = {
         "tipo": nave,
         "nombre": datos["nombre"],
-        "puntos": puntos
+        "puntos": puntos,
+        "impactos": [],
+        "estado": NAVE_INTACTA
     }
 
     flota.append(nueva_nave)

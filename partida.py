@@ -137,7 +137,12 @@ def mostrar_estado(nombre_jugador, cubo, flota_jugador):
 
     for nave in flota_jugador:
         puntos = [f"{z},{x},{y}" for z, x, y in nave["puntos"]]
-        print(f"{nave['nombre']}: {'  '.join(puntos)}")
+        estado = nave.get("estado", flota.NAVE_INTACTA)
+        impactos = nave.get("impactos", [])
+        print(
+            f"{nave['nombre']} ({estado}; impactos {len(impactos)}/"
+            f"{len(nave['puntos'])}): {'  '.join(puntos)}"
+        )
 
     print()
 
