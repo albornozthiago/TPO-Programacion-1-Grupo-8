@@ -45,3 +45,151 @@ def torpedo(cubo, punto):
 
     if celda == tablero.HUNDIDO:
         return "Celda ya disparada"
+    
+def misil_racimo(cubo, punto):
+    """
+    Recibe el cubo y el punto del disparo.
+    Dispara a la celda elegida y sus 6 vecinas ortogonales.
+    Devuelve una lista con los resultados.
+    """
+    if not tablero.punto_valido(cubo, punto):
+
+        return []
+
+    z, x, y = punto
+
+    puntos = [
+        (z, x, y),
+        (z + 1, x, y),
+        (z - 1, x, y),
+        (z, x + 1, y),
+        (z, x - 1, y),
+        (z, x, y + 1),
+        (z, x, y - 1)
+    ]
+
+    resultados = []
+
+    for objetivo in puntos:
+        if tablero.punto_valido(cubo, objetivo):
+            resultado = torpedo(cubo, objetivo)
+            resultados.append(resultado)
+
+    return resultados
+
+def carga_profundidad(cubo, punto):
+    """
+    Dispara a todas las celdas del eje Z
+    que tienen las mismas coordenadas X e Y.
+    Devuelve una lista con los resultados.
+    """
+
+    if not tablero.punto_valido(cubo, punto):
+        return []
+
+    z, x, y = punto
+    resultados = []
+
+    for nivel in range(1, len(cubo) + 1):
+        objetivo = (nivel, x, y)
+        resultado = torpedo(cubo, objetivo)
+        resultados.append(resultado)
+
+    return resultados
+
+def barrido_laser(cubo, punto, eje):
+    """
+    Dispara a toda una línea sobre el eje X o Y.
+    Devuelve una lista con los resultados.
+    """
+
+    if not tablero.punto_valido(cubo, punto):
+        return []
+
+    if eje not in ("x", "y"):
+        return []
+
+    z, x, y = punto
+    resultados = []
+
+    for posicion in range(1, len(cubo) + 1):
+
+        if eje == "x":
+            objetivo = (z, posicion, y)
+        else:
+            objetivo = (z, x, posicion)
+
+        resultado = torpedo(cubo, objetivo)
+        resultados.append(resultado)
+
+    return resultados
+
+def consumir_municion(codigo):
+    """
+    Comprueba si un arma tiene munición disponible.
+    Si tiene, consume una unidad y devuelve True.
+    Si no tiene, devuelve False.
+    """
+
+    arma = obtener_arma(codigo)
+
+    if arma is None:
+        return False
+
+    if arma["municion"] is None:
+        return True
+
+    if arma["municion"] <= 0:
+        return False
+
+    arma["municion"] -= 1
+    return True
+
+funciones_armas = {
+    "T": torpedo,
+    "R": misil_racimo,
+    "C": carga_profundidad,
+    "L": barrido_laser
+}
+
+def ejecutar_disparo(cubo, codigo, punto, eje=None):
+    """
+    Ejecuta un disparo según el arma elegida.
+    Comprueba la munición antes de disparar.
+    """
+
+    if codigo not in funciones_armas:
+        return "Arma no disponible"
+
+    if not tablero.punto_valido(cubo, punto):
+        return "Punto invalido"
+
+    if codigo == "L" and eje not in ("x", "y"):
+        return "Eje invalido"
+
+    arma = obtener_arma(codigo)
+
+    if arma["municion"] == 0:
+        return "Sin municion"
+
+    if codigo == "L":
+        resultado = funciones_armas[codigo](cubo, punto, eje)
+    else:
+        resultado = funciones_armas[codigo](cubo, punto)
+
+    consumir_municion(codigo)
+
+    return resultado
+
+def reiniciar_municion():
+    """
+    Restablece la municion inicial de todas las armas.
+    """
+
+    catalogo_armas["T"]["municion"] = None
+    catalogo_armas["R"]["municion"] = 3
+    catalogo_armas["C"]["municion"] = 2
+    catalogo_armas["S"]["municion"] = 4
+    catalogo_armas["L"]["municion"] = 2
+    catalogo_armas["O"]["municion"] = 1
+    catalogo_armas["G"]["municion"] = 1
