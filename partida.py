@@ -449,7 +449,7 @@ def nueva_partida_1v1(configuracion):
         "jugadores": [jugador1, jugador2],
         "turno": 0,
         "numero_turno": 1,
-        "historial": registro.inicioHistorial(),
+        "historial": registro.inicio_historial(),
         "ganador": None,
         "ultimo_resultado": None
     }
@@ -492,7 +492,7 @@ def nueva_partida_vs_maquina(configuracion, dificultad):
         "jugadores": [jugador, maquina],
         "turno": 0,
         "numero_turno": 1,
-        "historial": registro.inicioHistorial(),
+        "historial": registro.inicio_historial(),
         "ganador": None,
         "ultimo_resultado": None,
         "dificultad": dificultad
@@ -628,7 +628,7 @@ def ejecutar_turno(estado, jugada):
 
     guardar_municion(jugador)
 
-    registro.registroTurno(
+    registro.registro_turno(
         estado["historial"],
         estado["numero_turno"],
         jugador["nombre"],
@@ -921,7 +921,7 @@ def jugar_partida(estado):
 
         print()
         print(
-            registro.mostrarHistorial(
+            registro.mostrar_historial(
                 estado["historial"]
             )
         )
