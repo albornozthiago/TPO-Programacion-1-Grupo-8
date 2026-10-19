@@ -1,5 +1,6 @@
 import tablero
 import flota as modulo_flota
+import radar
 
 # Catálogo de armas
 catalogo_armas = {
@@ -19,6 +20,18 @@ def obtener_arma(codigo):
     """
     return catalogo_armas.get(codigo)
 
+def crear_municion():
+    """
+    Crea un diccionario con la municion inicial
+    de todas las armas para un jugador.
+    """
+    municion = {}
+
+    for codigo, datos in catalogo_armas.items():
+        municion[codigo] = datos["municion"]
+
+    return municion
+
 def torpedo(cubo, punto, flota_jugador=None):
     """
     Recibe el cubo y el punto al que se dispara.
@@ -30,10 +43,10 @@ def torpedo(cubo, punto, flota_jugador=None):
 
     celda = tablero.leer_celda(cubo, punto)
 
-    if celda == tablero.AGUA_SIN_EXPLORAR:
+    if celda == tablero.AGUA_SIN_EXPLORAR or celda == tablero.DETECTADO:
         tablero.escribir_celda(cubo, punto, tablero.AGUA_MARCADA)
         return "Agua"
-
+    
     if celda == tablero.NAVE_OCULTA:
         tablero.escribir_celda(cubo, punto, tablero.IMPACTO)
         if flota_jugador is not None:
@@ -122,43 +135,89 @@ def barrido_laser(cubo, punto, eje, flota_jugador=None):
         else:
             objetivo = (z, x, posicion)
 
-        resultado = torpedo(cubo, objetivo, flota_jugador)
-        resultados.append(resultado)
+        es_submarino = False
+
+        if flota_jugador is not None:
+            for nave in flota_jugador:
+                if nave["tipo"] == "S" and objetivo in nave["puntos"]:
+                    es_submarino = True
+                    break
+
+        if es_submarino:
+            resultados.append("Submarino inmune")
+        else:
+            resultado = torpedo(cubo, objetivo, flota_jugador)
+            resultados.append(resultado)
 
     return resultados
 
-def consumir_municion(codigo):
+def sonar(cubo, punto, eje, flota_jugador=None):
     """
-    Comprueba si un arma tiene munición disponible.
-    Si tiene, consume una unidad y devuelve True.
-    Si no tiene, devuelve False.
+    Explora un plano del cubo utilizando el sonar.
+    Devuelve las coordenadas de las naves detectadas
+    sin producir daños.
     """
+    z, x, y = punto
 
-    arma = obtener_arma(codigo)
+    if eje == "z":
+        valor = z
+    elif eje == "x":
+        valor = x
+    elif eje == "y":
+        valor = y
+    else:
+        return None
 
-    if arma is None:
+    return radar.sonar_plano(cubo, eje, valor)
+
+def consumir_municion(codigo, municion_jugador):
+    """
+    Recibe el codigo del arma y la municion de un jugador.
+    Descuenta una unidad si hay municion disponible.
+    Devuelve True si puede utilizar el arma y False si no.
+    """
+    if codigo not in municion_jugador:
         return False
 
-    if arma["municion"] is None:
+    cantidad = municion_jugador[codigo]
+
+    if cantidad is None:
         return True
 
-    if arma["municion"] <= 0:
+    if cantidad <= 0:
         return False
 
-    arma["municion"] -= 1
+    municion_jugador[codigo] -= 1
     return True
+
+def recompensar_estacion(flota_jugador, municion_jugador, estado_anterior):
+    """
+    Otorga municion adicional si una estacion orbital
+    acaba de ser hundida.
+    """
+
+    if flota_jugador is None:
+        return
+
+    for nave in flota_jugador:
+        if nave["tipo"] == "E":
+            if estado_anterior != modulo_flota.NAVE_HUNDIDA:
+                if nave["estado"] == modulo_flota.NAVE_HUNDIDA:
+                    municion_jugador["R"] += 1
 
 funciones_armas = {
     "T": torpedo,
     "R": misil_racimo,
     "C": carga_profundidad,
-    "L": barrido_laser
+    "L": barrido_laser,
+    "S": sonar
 }
 
-def ejecutar_disparo(cubo, codigo, punto, eje=None, flota_jugador=None):
+def ejecutar_disparo(cubo, codigo, punto, municion_jugador, eje=None, flota_jugador=None):
     """
-    Ejecuta un disparo según el arma elegida.
-    Comprueba la munición antes de disparar.
+    Ejecuta un disparo con el arma elegida.
+    Comprueba y descuenta la municion del jugador.
+    Devuelve el resultado del disparo.
     """
 
     if codigo not in funciones_armas:
@@ -170,17 +229,31 @@ def ejecutar_disparo(cubo, codigo, punto, eje=None, flota_jugador=None):
     if codigo == "L" and eje not in ("x", "y"):
         return "Eje invalido"
 
-    arma = obtener_arma(codigo)
+    if codigo == "S" and eje not in ("z", "x", "y"):
+        return "Eje invalido"
 
-    if arma["municion"] == 0:
-        return "Sin municion"
+    if codigo not in municion_jugador:
+        return "Arma no disponible"
 
-    if codigo == "L":
+    if municion_jugador[codigo] is not None:
+        if municion_jugador[codigo] <= 0:
+            return "Sin municion"
+
+    estado_anterior = None
+
+    if flota_jugador is not None:
+        for nave in flota_jugador:
+            if nave["tipo"] == "E":
+                estado_anterior = nave["estado"]
+
+    if codigo in ("L", "S"):
         resultado = funciones_armas[codigo](cubo, punto, eje, flota_jugador)
     else:
         resultado = funciones_armas[codigo](cubo, punto, flota_jugador)
 
-    consumir_municion(codigo)
+    recompensar_estacion(flota_jugador, municion_jugador, estado_anterior)
+
+    consumir_municion(codigo, municion_jugador)
 
     return resultado
 

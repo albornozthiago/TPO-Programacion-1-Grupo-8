@@ -23,7 +23,7 @@ def busqueda_lineal(cubo):
         for x in range(0, n):
             for y in range(0, n):
                 comparaciones = comparaciones + 1
-                if cubo[z][x][y] == tablero.naveoculta:
+                if cubo[z][x][y] == tablero.NAVE_OCULTA:
                     return [z + 1, x + 1, y + 1], armar_metricas(comparaciones, inicio)
 
     return None, armar_metricas(comparaciones, inicio)
@@ -45,7 +45,7 @@ def busqueda_optimizada(cubo):
                 for y in range(0, n):
                     if (z + x + y) % 2 == paridad:
                         comparaciones = comparaciones + 1
-                        if cubo[z][x][y] == tablero.naveoculta:
+                        if cubo[z][x][y] == tablero.NAVE_OCULTA:
                             return [z + 1, x + 1, y + 1], armar_metricas(comparaciones, inicio)
 
     return None, armar_metricas(comparaciones, inicio)
@@ -89,6 +89,6 @@ def sonar_plano(cubo, eje, valor):
 
     contactos = []
     for punto in puntos:
-        if tablero.leer_celda(cubo, punto) == tablero.naveoculta:
+        if tablero.leer_celda(cubo, punto) == tablero.NAVE_OCULTA:
             contactos.append(punto)
     return contactos

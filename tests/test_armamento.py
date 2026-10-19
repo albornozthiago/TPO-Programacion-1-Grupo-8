@@ -108,39 +108,35 @@ def test_barrido_laser_y():
 
 def test_consumir_municion():
     """
-    Comprueba que el misil de racimo consuma una municion
-    por uso y no permita consumir cuando se agota.
+    Comprueba que la municion se descuente correctamente
+    y que no se pueda utilizar un arma sin municion.
     """
-    armamento.catalogo_armas["R"]["municion"] = 3
+    municion = armamento.crear_municion()
 
-    assert armamento.consumir_municion("R") == True
-    assert armamento.catalogo_armas["R"]["municion"] == 2
+    assert armamento.consumir_municion("R", municion) == True
+    assert municion["R"] == 2
 
-    assert armamento.consumir_municion("R") == True
-    assert armamento.consumir_municion("R") == True
+    assert armamento.consumir_municion("R", municion) == True
+    assert armamento.consumir_municion("R", municion) == True
 
-    assert armamento.catalogo_armas["R"]["municion"] == 0
-    assert armamento.consumir_municion("R") == False
-
-    # Restauramos la munición para no afectar otras pruebas.
-    armamento.catalogo_armas["R"]["municion"] = 3
+    assert municion["R"] == 0
+    assert armamento.consumir_municion("R", municion) == False
 
 
 def test_ejecutar_disparo():
     """
     Comprueba que ejecutar_disparo utilice el arma elegida
-    y descuente correctamente su municion.
+    y descuente correctamente la municion del jugador.
     """
     cubo = tablero.crear_cubo(5)
+    municion = armamento.crear_municion()
 
-    armamento.catalogo_armas["R"]["municion"] = 3
-
-    resultado = armamento.ejecutar_disparo(cubo, "R", (3, 3, 3))
+    resultado = armamento.ejecutar_disparo(
+        cubo, "R", (3, 3, 3), municion
+    )
 
     assert len(resultado) == 7
-    assert armamento.catalogo_armas["R"]["municion"] == 2
-
-    armamento.catalogo_armas["R"]["municion"] = 3
+    assert municion["R"] == 2
 
 
 def test_reiniciar_municion():
@@ -181,17 +177,18 @@ def test_racimo_esquina():
 def test_disparo_sin_municion():
     """
     Comprueba que no se pueda disparar un arma
-    cuando su municion se encuentra agotada.
+    cuando su municion esta agotada.
     """
     cubo = tablero.crear_cubo(5)
+    municion = armamento.crear_municion()
 
-    armamento.catalogo_armas["R"]["municion"] = 0
+    municion["R"] = 0
 
-    resultado = armamento.ejecutar_disparo(cubo, "R", (3, 3, 3))
+    resultado = armamento.ejecutar_disparo(
+        cubo, "R", (3, 3, 3), municion
+    )
 
     assert resultado == "Sin municion"
-
-    armamento.reiniciar_municion()
 
 def test_torpedo_con_flota():
     """
@@ -207,8 +204,10 @@ def test_torpedo_con_flota():
 
     assert resultado_ubicacion is not None
 
+    municion = armamento.crear_municion()
+
     resultado = armamento.ejecutar_disparo(
-        cubo, "T", (3, 3, 3), flota_jugador=naves
+        cubo, "T", (3, 3, 3), municion, flota_jugador=naves
     )
 
     assert resultado == "Nave averiada"
@@ -230,3 +229,117 @@ def test_torpedo_hunde_nave_y_actualiza_todas_sus_celdas():
     assert naves[0]["impactos"] == [(3, 3, 3), (3, 3, 4)]
     assert tablero.leer_celda(cubo, (3, 3, 3)) == tablero.HUNDIDO
     assert tablero.leer_celda(cubo, (3, 3, 4)) == tablero.HUNDIDO
+
+def test_municion_independiente():
+    """
+    Comprueba que cada jugador tenga su propia municion
+    y que los disparos de uno no afecten al otro.
+    """
+    jugador1 = armamento.crear_municion()
+    jugador2 = armamento.crear_municion()
+
+    armamento.consumir_municion("R", jugador1)
+
+    assert jugador1["R"] == 2
+    assert jugador2["R"] == 3
+
+def test_torpedo_celda_detectada():
+    """
+    Comprueba que un torpedo pueda disparar sobre
+    una celda previamente detectada por sonar.
+    """
+    cubo = tablero.crear_cubo(5)
+
+    tablero.escribir_celda(cubo, (2, 2, 2), tablero.DETECTADO)
+
+    resultado = armamento.torpedo(cubo, (2, 2, 2))
+
+    assert resultado == "Agua"
+    assert tablero.leer_celda(cubo, (2, 2, 2)) == tablero.AGUA_MARCADA
+
+def test_laser_no_dana_submarino():
+    """
+    Comprueba que el barrido laser no produzca
+    impactos sobre un submarino.
+    """
+    cubo = tablero.crear_cubo(8)
+    naves = []
+
+    flota.ubicar_nave(
+        cubo, naves, "S", (2, 3, 3), (2, 3, 5)
+    )
+
+    resultados = armamento.barrido_laser(
+        cubo, (2, 3, 3), "y", naves
+    )
+
+    assert resultados.count("Submarino inmune") == 3
+
+    assert tablero.leer_celda(cubo, (2, 3, 3)) == tablero.NAVE_OCULTA
+    assert tablero.leer_celda(cubo, (2, 3, 4)) == tablero.NAVE_OCULTA
+    assert tablero.leer_celda(cubo, (2, 3, 5)) == tablero.NAVE_OCULTA
+
+    assert naves[0]["impactos"] == []
+    assert naves[0]["estado"] == flota.NAVE_INTACTA
+
+def test_recompensa_estacion_orbital():
+    """
+    Comprueba que hundir una estacion orbital
+    entregue municion adicional una sola vez.
+    """
+    cubo = tablero.crear_cubo(8)
+    naves = []
+    municion = armamento.crear_municion()
+
+    resultado_ubicacion = flota.ubicar_nave(
+        cubo, naves, "E", (3, 3, 3), (4, 4, 4)
+    )
+
+    assert resultado_ubicacion is not None
+
+    municion_inicial = municion["R"]
+
+    puntos_estacion = naves[0]["puntos"]
+
+    for punto in puntos_estacion[:-1]:
+        armamento.ejecutar_disparo(
+            cubo, "T", punto, municion, flota_jugador=naves
+        )
+
+    assert municion["R"] == municion_inicial
+
+    armamento.ejecutar_disparo(
+        cubo, "T", puntos_estacion[-1], municion, flota_jugador=naves
+    )
+
+    assert naves[0]["estado"] == flota.NAVE_HUNDIDA
+    assert municion["R"] == municion_inicial + 1
+
+    armamento.ejecutar_disparo(
+        cubo, "T", puntos_estacion[-1], municion, flota_jugador=naves
+    )
+
+    assert municion["R"] == municion_inicial + 1
+
+def test_sonar_integrado():
+    """
+    Comprueba que el sonar detecte naves,
+    no produzca daños y consuma municion.
+    """
+    cubo = tablero.crear_cubo(8)
+    municion = armamento.crear_municion()
+
+    tablero.escribir_celda(
+        cubo, (3, 4, 5), tablero.NAVE_OCULTA
+    )
+
+    resultado = armamento.ejecutar_disparo(
+        cubo, "S", (3, 3, 3), municion, eje="z"
+    )
+
+    assert [3, 4, 5] in resultado
+    assert municion["S"] == 3
+
+    assert tablero.leer_celda(
+        cubo, (3, 4, 5)
+    ) == tablero.NAVE_OCULTA

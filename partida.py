@@ -561,7 +561,6 @@ def ejecutar_turno(estado, jugada):
 
     codigo = jugada["arma"]
 
-    cargar_municion(jugador)
 
     if codigo == "S":
         eje = jugada["eje"]
@@ -573,16 +572,24 @@ def ejecutar_turno(estado, jugada):
         if valor < 1 or valor > estado["n"]:
             raise JugadaInvalidaError("Valor invalido.")
 
-        if armamento.catalogo_armas["S"]["municion"] == 0:
+        if jugador["municion"]["S"] == 0:
             raise SinMunicionError("No queda municion de sonar.")
 
-        contactos = radar.sonar_plano(
-            rival["cubo"],
-            eje,
-            valor
-        )
+        punto = (valor, 1, 1)
 
-        armamento.consumir_municion("S")
+        if eje == "x":
+            punto = (1, valor, 1)
+        elif eje == "y":
+            punto = (1, 1, valor)
+
+        contactos = armamento.ejecutar_disparo(
+            rival["cubo"],
+            "S",
+            punto,
+            jugador["municion"],
+            eje=eje,
+            flota_jugador=rival["flota"]
+        )
 
         resultado = (
             "Sonar sobre "
@@ -608,8 +615,9 @@ def ejecutar_turno(estado, jugada):
             rival["cubo"],
             codigo,
             punto,
-            eje,
-            rival["flota"]
+            jugador["municion"],
+            eje=eje,
+            flota_jugador=rival["flota"]
         )
 
         if resultado == "Sin municion":
@@ -626,7 +634,7 @@ def ejecutar_turno(estado, jugada):
 
         punto_historial = punto
 
-    guardar_municion(jugador)
+    
 
     registro.registro_turno(
         estado["historial"],
