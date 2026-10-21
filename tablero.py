@@ -289,3 +289,180 @@ def columna_maxima(matriz):
     return maximo
 
 
+
+def obtener_plano_x(cubo, x):
+    """
+    Obtiene el corte del cubo que se forma fijando el eje x
+
+    Recibe: cubo: cubo de juego
+        x: valor de x a fijar, comenzando desde 1
+
+    Devuelve: Una matriz donde cada fila es una capa z y cada columna
+    un valor de y (plano[z][y])
+    Devuelve None si x no es válido
+    """
+    n = len(cubo)
+    if x < 1 or x > n:
+        return None
+    indice_x = x - 1
+    plano = []
+    for z in range(0, n):
+        fila = []
+        for y in range(0, n):
+            fila.append(cubo[z][indice_x][y])
+        plano.append(fila)
+    return plano
+
+
+def obtener_plano_y(cubo, y):
+    """
+    Obtiene el corte del cubo que se forma fijando el eje y
+
+    Recibe: cubo: cubo de juego
+        y: valor de y a fijar, comenzando desde 1
+
+    Devuelve: Una matriz donde cada fila es una capa z y cada columna
+        un valor de x (plano[z][x])
+        Devuelve None si y no es válido
+    """
+    n = len(cubo)
+    if y < 1 or y > n:
+        return None
+    indice_y = y - 1
+    plano = []
+    for z in range(0, n):
+        fila = []
+        for x in range(0, n):
+            fila.append(cubo[z][x][indice_y])
+        plano.append(fila)
+    return plano
+
+
+def dibujar_matriz(plano, titulo, letra_filas, letra_columnas):
+    """
+    Genera una representación en texto de un plano con encabezados
+
+    No utiliza print porque tablero.py es un módulo de dominio
+
+    Recibe: 
+        plano: matriz con los estados de las celdas.
+        titulo: texto que va arriba del dibujo.
+        letra_filas: nombre del eje de las filas ("z" o "y").
+        letra_columnas: nombre del eje de las columnas ("x" o "y").
+
+    Devuelve: String con la representación del plano.
+    """
+    n = len(plano)
+    texto = "========= " + titulo + " =========\n"
+    texto += "    "
+    for columna in range(1, n + 1):
+        texto += letra_columnas + str(columna) + " "
+    texto += "\n"
+    for fila in range(0, n):
+        texto += letra_filas + str(fila + 1) + "  "
+        for columna in range(0, n):
+            texto += str(plano[fila][columna]) + "  "
+        texto += "\n"
+    texto += "\n"
+    texto += "Referencias: "
+    texto += AGUA_SIN_EXPLORAR + " sin explorar  "
+    texto += AGUA_MARCADA + " agua  "
+    texto += IMPACTO + " impacto  "
+    texto += HUNDIDO + " hundido  "
+    texto += DETECTADO + " detectado"
+    return texto
+
+
+def dibujar_plano_x(cubo, x):
+    """
+    Genera una representación en texto del corte fijando x
+
+    Recibe: cubo: cubo de juego
+        x: valor de x a fijar, comenzando desde 1
+
+    Devuelve: String con la representación del corte
+        Devuelve None si x no es válido
+    """
+    plano = obtener_plano_x(cubo, x)
+    if plano is None:
+        return None
+    return dibujar_matriz(plano, "CORTE x = " + str(x), "z", "y")
+
+
+def dibujar_plano_y(cubo, y):
+    """
+    Genera una representación en texto del corte fijando y
+
+    Recibe: cubo: cubo de juego
+        y: valor de y a fijar, comenzando desde 1
+
+    Devuelve: String con la representación del corte
+        Devuelve None si y no es válido
+    """
+    plano = obtener_plano_y(cubo, y)
+    if plano is None:
+        return None
+    return dibujar_matriz(plano, "CORTE y = " + str(y), "z", "x")
+
+
+def vecinos_ortogonales(cubo, punto):
+    """
+    Obtiene las celdas pegadas a un punto por una cara
+    (arriba, abajo, adelante, atrás, izquierda y derecha)
+    Se usa, por ejemplo, para el misil de racimo
+
+    Recibe:
+        cubo: cubo de juego
+        punto: coordenadas (z, x, y), comenzando desde 1
+
+    Devuelve: Lista de puntos [z, x, y] vecinos que están dentro del cubo 
+        (6 como máximo)
+        Devuelve None si el punto no es válido
+    """
+
+    if not punto_valido(cubo, punto):
+        return None
+    
+    desplazamientos = [[1, 0, 0], [-1, 0, 0],
+                       [0, 1, 0], [0, -1, 0],
+                       [0, 0, 1], [0, 0, -1]]
+    vecinos = []
+    for fila in range(0, len(desplazamientos)):
+        vecino = [punto[0] + desplazamientos[fila][0],
+                  punto[1] + desplazamientos[fila][1],
+                  punto[2] + desplazamientos[fila][2]]
+        if punto_valido(cubo, vecino):
+            vecinos.append(vecino)
+    return vecinos
+
+
+def vecinos_todos(cubo, punto):
+    """
+    Obtiene todas las celdas que rodean a un punto, incluidas las
+    diagonales. Se usa, por ejemplo, para controlar que entre dos
+    naves quede al menos una celda libre
+
+    Recibe:
+        cubo: cubo de juego.
+        punto: coordenadas (z, x, y), comenzando desde 1.
+
+    Devuelve: Lista de puntos [z, x, y] vecinos que están dentro del cubo
+        (26 como máximo).
+        Devuelve None si el punto no es válido
+    """
+    
+    if not punto_valido(cubo, punto):
+        return None
+    vecinos = []
+    for cambio_z in range(-1, 2):          
+        for cambio_x in range(-1, 2):
+            for cambio_y in range(-1, 2):
+                if cambio_z != 0 or cambio_x != 0 or cambio_y != 0:
+                    vecino = [punto[0] + cambio_z,
+                              punto[1] + cambio_x,
+                              punto[2] + cambio_y]
+                    if punto_valido(cubo, vecino):
+                        vecinos.append(vecino)
+    return vecinos
+
+
