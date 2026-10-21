@@ -337,7 +337,7 @@ def test_sonar_integrado():
         cubo, "S", (3, 3, 3), municion, eje="z"
     )
 
-    assert [3, 4, 5] in resultado
+    assert (3, 4, 5) in resultado
     assert municion["S"] == 3
 
     assert tablero.leer_celda(
