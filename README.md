@@ -1,6 +1,6 @@
 # Batalla Naval 3D - "Operación Cubo" - Trabajo Práctico Integrador · Programación 1
 
-Repositorio del equipo [], correspondiente al desarrollo del Trabajo Práctico Integrador para la materia Programación 1, UADE 2026.
+Repositorio del equipo 8, correspondiente al desarrollo del Trabajo Práctico Integrador para la materia Programación 1, UADE 2026.
 
 ## Integrantes:
 
