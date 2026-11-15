@@ -465,4 +465,80 @@ def vecinos_todos(cubo, punto):
                         vecinos.append(vecino)
     return vecinos
 
+def recorrido_por_capas(cubo):
+    """
+    Recorre el cubo capa por capa, en el mismo orden en que se dibuja.
+
+    Recibe: cubo: cubo de juego
+    Devuelve: lista de puntos [z, x, y] en orden de visita
+    """
+    n = len(cubo)
+    puntos = []
+    for z in range(1, n + 1):
+        for y in range(1, n + 1):
+            for x in range(1, n + 1):
+                puntos.append([z, x, y])
+    return puntos
+
+
+def recorrido_espiral(cubo):
+    
+    """ Recorre cada capa en espiral, desde el borde hacia el centro (recursivo).
+
+    Recibe: cubo: cubo de juego
+    Devuelve: lista de puntos [z, x, y] en orden de visita """
+
+    n = len(cubo)
+
+    def espiral(z, inicio, fin):
+        if inicio > fin:
+            return []
+        if inicio == fin:
+            return [[z, inicio, inicio]]
+        borde = []
+        for x in range(inicio, fin + 1):
+            borde.append([z, x, inicio])
+        for y in range(inicio + 1, fin + 1):
+            borde.append([z, fin, y])
+        for x in range(fin - 1, inicio - 1, -1):
+            borde.append([z, x, fin])
+        for y in range(fin - 1, inicio, -1):
+            borde.append([z, inicio, y])
+        
+        return borde + espiral(z, inicio + 1, fin - 1)
+
+    puntos = []
+    for z in range(1, n + 1):
+        puntos = puntos + espiral(z, 1, n)
+    return puntos
+
+
+def recorrido_desde_punto(cubo, punto):
+    """
+    Recorre el cubo expandiéndose desde un punto, como una onda (recursivo).
+
+    Recibe: cubo: cubo de juego
+        punto: coordenadas (z, x, y) de inicio
+    Devuelve: lista de puntos [z, x, y] en orden de visita
+        Devuelve None si el punto no es válido
+    """
+
+    if not punto_valido(cubo, punto):
+        return None
+
+    def propagar(frontera, visitados):
+        if len(frontera) == 0:
+            return visitados
+        nueva_frontera = []
+        for celda in frontera:
+            for vecino in vecinos_ortogonales(cubo, celda):
+                if vecino not in visitados and vecino not in nueva_frontera:
+                    nueva_frontera.append(vecino)
+
+        return propagar(nueva_frontera, visitados + nueva_frontera)
+
+    inicio = [punto[0], punto[1], punto[2]]
+    
+    return propagar([inicio], [inicio])
+
 
