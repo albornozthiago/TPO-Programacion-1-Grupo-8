@@ -343,3 +343,66 @@ def test_sonar_integrado():
     assert tablero.leer_celda(
         cubo, (3, 4, 5)
     ) == tablero.NAVE_OCULTA
+
+def test_onda_expansiva():
+    """
+    Comprueba que la onda expansiva afecte las celdas
+    dentro de un radio de 2 y consuma municion.
+    """
+    cubo = tablero.crear_cubo(8)
+    municion = armamento.crear_municion()
+
+    resultado = armamento.ejecutar_disparo(
+        cubo, "O", (4, 4, 4), municion
+    )
+
+    assert len(resultado) == 25
+    assert resultado.count("Agua") == 25
+
+    assert tablero.leer_celda(cubo, (4, 4, 6)) == tablero.AGUA_MARCADA
+    assert tablero.leer_celda(cubo, (4, 4, 7)) == tablero.AGUA_SIN_EXPLORAR
+
+    assert municion["O"] == 0
+
+    resultado = armamento.ejecutar_disparo(
+        cubo, "O", (4, 4, 4), municion
+    )
+
+    assert resultado == "Sin municion"
+
+def test_torpedo_guiado():
+    """
+    Comprueba que el torpedo guiado encuentre una celda
+    de una nave averiada y termine de hundirla.
+    """
+    cubo = tablero.crear_cubo(8)
+    naves = []
+    municion = armamento.crear_municion()
+
+    flota.ubicar_nave(
+        cubo, naves, "F", (3, 3, 3), (3, 3, 4)
+    )
+
+    armamento.torpedo(cubo, (3, 3, 3), naves)
+
+    resultado = armamento.ejecutar_disparo(
+        cubo, "G", (3, 3, 3), municion, flota_jugador=naves
+    )
+
+    assert resultado == "Nave hundida"
+    assert naves[0]["estado"] == flota.NAVE_HUNDIDA
+    assert municion["G"] == 0
+
+def test_torpedo_guiado_sin_objetivo():
+    """
+    Comprueba que el torpedo guiado devuelva
+    un mensaje cuando no hay una nave averiada.
+    """
+    cubo = tablero.crear_cubo(8)
+    municion = armamento.crear_municion()
+
+    resultado = armamento.ejecutar_disparo(
+        cubo, "G", (3, 3, 3), municion, flota_jugador=[]
+    )
+
+    assert resultado == "Sin objetivo guiado"
