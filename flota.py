@@ -337,6 +337,73 @@ def registrar_impacto(cubo, flota, punto):
     return "Impacto"
 
 
+def datos_flota(flota):
+    """
+    Convierte la flota a datos compatibles con JSON para guardar una partida.
+
+    Recibe:
+        flota: lista de naves ubicadas.
+    Devuelve:
+        Lista con el tipo, los puntos y los impactos de cada nave.
+        Las coordenadas se representan como listas para que JSON pueda
+        almacenarlas.
+    """
+
+    datos = []
+
+    for nave in flota:
+        datos.append({
+            "tipo": nave["tipo"],
+            "puntos": [list(punto) for punto in nave["puntos"]],
+            "impactos": [
+                list(punto) for punto in nave.get("impactos", [])
+            ]
+        })
+
+    return datos
+
+
+def reponer_flota(datos):
+    """
+    Reconstruye las naves guardadas y recupera las coordenadas como tuplas.
+
+    Recibe:
+        datos: lista de naves guardada con datos_flota.
+    Devuelve:
+        Lista de naves lista para continuar una partida.
+    """
+
+    flota_repuesta = []
+
+    for datos_nave in datos:
+        tipo = datos_nave["tipo"]
+        puntos = []
+        impactos = []
+
+        for punto in datos_nave["puntos"]:
+            puntos.append(tuple(punto))
+
+        for punto in datos_nave.get("impactos", []):
+            impactos.append(tuple(punto))
+
+        if len(impactos) > 0 and len(impactos) == len(puntos):
+            estado = NAVE_HUNDIDA
+        elif len(impactos) > 0:
+            estado = NAVE_AVERIADA
+        else:
+            estado = NAVE_INTACTA
+
+        flota_repuesta.append({
+            "tipo": tipo,
+            "nombre": CATALOGO_NAVES[tipo]["nombre"],
+            "puntos": puntos,
+            "impactos": impactos,
+            "estado": estado
+        })
+
+    return flota_repuesta
+
+
 def ubicar_nave(cubo, flota, nave, punto_desde, punto_hasta):
     """
     Intenta ubicar una nave.
