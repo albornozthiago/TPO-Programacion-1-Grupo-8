@@ -170,6 +170,121 @@ def sonar(cubo, punto, eje, flota_jugador=None):
 
     return radar.sonar_plano(cubo, eje, valor)
 
+def onda_expansiva(cubo, punto, flota_jugador=None):
+    """
+    Dispara desde un punto y se expande de forma recursiva.
+    Afecta las celdas que estan hasta dos pasos ortogonales
+    del punto inicial, sin repetir celdas.
+    Devuelve una lista con los resultados.
+    """
+
+    if not tablero.punto_valido(cubo, punto):
+        return []
+
+    visitados = set()
+    resultados = []
+
+    def propagar(puntos, radio):
+        siguientes = []
+
+        for actual in puntos:
+            actual = tuple(actual)
+
+            if actual not in visitados:
+                visitados.add(actual)
+
+                resultado = torpedo(cubo, actual, flota_jugador)
+                resultados.append(resultado)
+
+                if radio > 0:
+                    vecinos = tablero.vecinos_ortogonales(cubo, actual)
+
+                    for vecino in vecinos:
+                        vecino = tuple(vecino)
+
+                        if vecino not in visitados:
+                            siguientes.append(vecino)
+
+        if radio > 0 and siguientes:
+            propagar(siguientes, radio - 1)
+
+    propagar([punto], 2)
+
+    return resultados
+
+def buscar_objetivo_guiado(cubo, actual, puntos_nave, impactos, visitados):
+    """
+    Busca recursivamente una celda de la nave que todavia
+    no haya recibido un impacto.
+    """
+
+    actual = tuple(actual)
+
+    if actual in visitados:
+        return None
+
+    visitados.add(actual)
+
+    if actual in puntos_nave and actual not in impactos:
+        return actual
+
+    vecinos = tablero.vecinos_ortogonales(cubo, actual)
+
+    for vecino in vecinos:
+        vecino = tuple(vecino)
+
+        if vecino in puntos_nave and vecino not in visitados:
+            encontrado = buscar_objetivo_guiado(
+                cubo, vecino, puntos_nave, impactos, visitados
+            )
+
+            if encontrado is not None:
+                return encontrado
+
+    return None
+
+
+def torpedo_guiado(cubo, punto, flota_jugador=None):
+    """
+    Busca una celda sin impactar de una nave averiada.
+    Parte de una celda impactada y utiliza una busqueda
+    recursiva para encontrar el siguiente objetivo.
+    """
+
+    if not tablero.punto_valido(cubo, punto):
+        return "Punto invalido"
+
+    if flota_jugador is None:
+        return "Sin objetivo guiado"
+
+    for nave in flota_jugador:
+
+        if nave["estado"] == modulo_flota.NAVE_AVERIADA:
+
+            impactos = set()
+
+            for impacto in nave["impactos"]:
+                impactos.add(tuple(impacto))
+
+            if tuple(punto) not in impactos:
+                continue
+
+            puntos_nave = set()
+
+            for posicion in nave["puntos"]:
+                puntos_nave.add(tuple(posicion))
+
+            visitados = set()
+
+            objetivo = buscar_objetivo_guiado(
+                cubo, punto, puntos_nave, impactos, visitados
+            )
+
+            if objetivo is not None:
+                return torpedo(cubo, objetivo, flota_jugador)
+
+    return "Sin objetivo guiado"
+
 def consumir_municion(codigo, municion_jugador):
     """
     Recibe el codigo del arma y la municion de un jugador.
@@ -210,7 +325,9 @@ funciones_armas = {
     "R": misil_racimo,
     "C": carga_profundidad,
     "L": barrido_laser,
-    "S": sonar
+    "S": sonar,
+    "O": onda_expansiva,
+    "G": torpedo_guiado
 }
 
 def ejecutar_disparo(cubo, codigo, punto, municion_jugador, eje=None, flota_jugador=None):
