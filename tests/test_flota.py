@@ -246,9 +246,40 @@ def test_ubicacion_automatica_ninguna_nave_toca_a_otra():
     for i in range(len(naves)):
         otras = naves[:i] + naves[i + 1:]
         assert flota.distancia_valida(otras, naves[i]["puntos"])
- 
 
 
+def test_datos_flota_y_reponer_flota_preservan_impactos():
+    import json
+
+    cubo = nuevo_cubo()
+    naves = []
+    cubo, naves = flota.ubicar_nave(
+        cubo, naves, "F", (3, 3, 3), (3, 3, 4)
+    )
+    flota.registrar_impacto(cubo, naves, (3, 3, 3))
+
+    guardados = json.loads(json.dumps(flota.datos_flota(naves)))
+    naves_repuestas = flota.reponer_flota(guardados)
+
+    assert naves_repuestas == [{
+        "tipo": "F",
+        "nombre": "Fragata",
+        "puntos": [(3, 3, 3), (3, 3, 4)],
+        "impactos": [(3, 3, 3)],
+        "estado": flota.NAVE_AVERIADA
+    }]
+
+
+def test_reponer_flota_reconstruye_estado_hundido():
+    datos = [{
+        "tipo": "F",
+        "puntos": [[3, 3, 3], [3, 3, 4]],
+        "impactos": [[3, 3, 3], [3, 3, 4]]
+    }]
+
+    naves = flota.reponer_flota(datos)
+
+    assert naves[0]["estado"] == flota.NAVE_HUNDIDA
 
 
 
